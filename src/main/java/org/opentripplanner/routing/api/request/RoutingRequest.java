@@ -94,6 +94,11 @@ public class RoutingRequest implements AutoCloseable, Cloneable, Serializable {
     /** The complete list of incoming query parameters. */
     public final HashMap<String, String> parameters = new HashMap<String, String>();
 
+    /**
+     * Tempo di percorrenza massimo, in secondi, consentito per l'automobile.
+     */
+    public long maxCarUsage = Long.MAX_VALUE;
+
     /** The start location */
     public GenericLocation from;
 
@@ -151,6 +156,7 @@ public class RoutingRequest implements AutoCloseable, Cloneable, Serializable {
      * // TODO OTP2 Street routing requests should eventually be split into its own request class.
      */
     public RequestModes modes = new RequestModes(
+        // TODO provare a cambiare le modalità di default da qui
         StreetMode.WALK,
         StreetMode.WALK,
         StreetMode.WALK,
@@ -778,7 +784,7 @@ public class RoutingRequest implements AutoCloseable, Cloneable, Serializable {
     public RoutingRequest() {
         // http://en.wikipedia.org/wiki/Walking
         walkSpeed = 1.33; // 1.33 m/s ~ 3mph, avg. human speed
-        bikeSpeed = 5; // 5 m/s, ~11 mph, a random bicycling speed
+        bikeSpeed = 2; //5; // 5 m/s, ~11 mph, a random bicycling speed
         bikeWalkingSpeed = 1.33; // 1.33 m/s ~ 3mph, avg. human speed
         // http://en.wikipedia.org/wiki/Speed_limit
         carSpeed = 40; // 40 m/s, 144 km/h, above the maximum (finite) driving speed limit worldwide

@@ -24,5 +24,13 @@ public enum Qualifier {
   /**
    * The mode is used for the direct street search.
    */
-  DIRECT
+  DIRECT,
+
+  // Modifiche al codice originale.
+  /**
+   * Indica che il mezzo può essere utilizzato fino
+   * a una fermata/stazione di un mezzo pubblico.
+   */
+  STOP
+
 }

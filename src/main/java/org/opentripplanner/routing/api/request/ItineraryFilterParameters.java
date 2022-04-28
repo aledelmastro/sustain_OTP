@@ -9,6 +9,8 @@ import org.opentripplanner.routing.algorithm.filterchain.ItineraryListFilterChai
  */
 public class ItineraryFilterParameters {
 
+  public long maxCarUsage;
+
   /**
    * Switch on to return all itineraries and mark filtered itineraries as deleted.
    */
@@ -98,6 +100,9 @@ public class ItineraryFilterParameters {
         RequestFunctions.createLinearFunction(3600, 2);
     this.nonTransitGeneralizedCostLimit =
         RequestFunctions.createLinearFunction(3600, 2);
+
+    // aggiunta per il filtro sul tempo massimo che posso passare in auto
+    this.maxCarUsage = Long.MAX_VALUE;
   }
 
   public static ItineraryFilterParameters createDefault() {

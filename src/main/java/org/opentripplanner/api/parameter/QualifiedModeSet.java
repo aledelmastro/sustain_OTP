@@ -133,7 +133,16 @@ public class QualifiedModeSet implements Serializable {
                         transferMode = StreetMode.WALK;
                         egressMode = StreetMode.WALK;
                         directMode = StreetMode.CAR_PICKUP;
-                    } else {
+                    } else if(requestMode.qualifiers.contains(Qualifier.STOP)) {
+                        /*
+                        * Formula la modalità mista automobile + mezzi pubblici.
+                        * */
+                        accessMode = StreetMode.CAR;
+                        transferMode = StreetMode.WALK;
+                        egressMode = StreetMode.WALK;
+                        directMode = StreetMode.WALK;
+                    }
+                    else {
                         accessMode = StreetMode.WALK;
                         transferMode = StreetMode.WALK;
                         egressMode = StreetMode.WALK;

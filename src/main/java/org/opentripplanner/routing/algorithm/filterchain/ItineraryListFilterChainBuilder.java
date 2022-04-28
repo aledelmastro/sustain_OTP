@@ -8,10 +8,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.opentripplanner.model.plan.Itinerary;
+import org.opentripplanner.model.plan.Leg;
 import org.opentripplanner.model.plan.SortOrder;
 import org.opentripplanner.routing.algorithm.filterchain.comparator.SortOrderComparator;
+import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.ItineraryDeletionFlagger;
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.LatestDepartureTimeFilter;
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.MaxLimitFilter;
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.NonTransitGeneralizedCostFilter;
@@ -21,12 +24,14 @@ import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.RemoveP
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.RemoveTransitIfStreetOnlyIsBetterFilter;
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.RemoveWalkOnlyFilter;
 import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.TransitGeneralizedCostFilter;
+import org.opentripplanner.routing.algorithm.filterchain.deletionflagger.sustain.MaxCarUsageFilter;
 import org.opentripplanner.routing.algorithm.filterchain.filter.DeletionFlaggingFilter;
 import org.opentripplanner.routing.algorithm.filterchain.filter.GroupByFilter;
 import org.opentripplanner.routing.algorithm.filterchain.filter.RemoveDeletionFlagForLeastTransfersItinerary;
 import org.opentripplanner.routing.algorithm.filterchain.filter.SortingFilter;
 import org.opentripplanner.routing.algorithm.filterchain.groupids.GroupByAllSameStations;
 import org.opentripplanner.routing.algorithm.filterchain.groupids.GroupByTripIdAndDistance;
+import org.opentripplanner.routing.core.TraverseMode;
 
 
 /**
@@ -49,6 +54,8 @@ public class ItineraryListFilterChainBuilder {
     private DoubleFunction<Double> nonTransitGeneralizedCostLimit;
     private Instant latestDepartureTimeLimit = null;
     private Consumer<Itinerary> maxLimitReachedSubscriber;
+
+    private long maxCarUsage = Long.MAX_VALUE;
 
 
     public ItineraryListFilterChainBuilder(SortOrder sortOrder) {
@@ -208,6 +215,17 @@ public class ItineraryListFilterChainBuilder {
         return this;
     }
 
+    /**
+     * Se il tempo trascorso in auto supera il valore di soglia,
+     * l'itinerario viene rimosso.
+     * @param maxCarUsage il tempo massimo, espresso in secondi,
+     *                    per i quali è permesso usare l'automobile.
+     */
+    public ItineraryListFilterChainBuilder withMaxCarUsage(long maxCarUsage) {
+        this.maxCarUsage = maxCarUsage;
+        return this;
+    }
+
     @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
     public ItineraryListFilterChain build() {
         List<ItineraryListFilter> filters = new ArrayList<>();
@@ -253,6 +271,12 @@ public class ItineraryListFilterChainBuilder {
             if (parkAndRideDurationRatio > 0) {
                 filters.add(new DeletionFlaggingFilter(new RemoveParkAndRideWithMostlyWalkingFilter(parkAndRideDurationRatio)));
             }
+
+            /*
+             * Provo a filtrare gli itinerari sulla base del tempo di percorrenza in auto
+             */
+            if (maxCarUsage < Long.MAX_VALUE)
+                filters.add(new DeletionFlaggingFilter(new MaxCarUsageFilter(maxCarUsage)));
         }
 
         // Remove itineraries if max limit is set

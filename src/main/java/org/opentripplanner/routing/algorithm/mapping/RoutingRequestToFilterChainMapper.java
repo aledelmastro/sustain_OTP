@@ -50,6 +50,9 @@ public class RoutingRequestToFilterChainMapper {
       builder.withMaxNumberOfItinerariesCrop(ListSection.HEAD);
     }
 
+    if(params.maxCarUsage < Long.MAX_VALUE)
+      builder.withMaxCarUsage(params.maxCarUsage);
+
     builder
         .withMaxNumberOfItineraries(Math.min(maxNumOfItineraries, MAX_NUMBER_OF_ITINERARIES))
         .withTransitGeneralizedCostLimit(params.transitGeneralizedCostLimit)
